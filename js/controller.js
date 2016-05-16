@@ -989,9 +989,11 @@ $scope.$parent.loaded=true;
 $scope.$parent.title="Online Sales Details";
 $scope.portals=onlineSalesList.portals;
 $scope.onlineSalesList=onlineSalesList.onlineSalesList;
+$scope.loading=false;
 $scope.handler=function(e,files)
 {
  
+ $scope.loading=true;
  try{
 
       var reader=new FileReader();
@@ -1042,6 +1044,7 @@ $scope.handler=function(e,files)
                 $scope.statusCode="400";
                 $scope.msg=error;
                 $scope.notification=true;
+                $scope.loading=false;
               });
                 $("#MyFile").val('');
           }
@@ -1062,14 +1065,14 @@ $scope.handler=function(e,files)
         $scope.statusCode="400";
         $scope.msg=error;
         $scope.notification=true;
+        $scope.loading=false;
         $("#MyFile").val('');
       }
 }
 
   function saveOnlineSales()
   {
-    console.log($scope.datas);
-
+    
      $http.post(DOMAIN+ONLINE_SALES_URL,$scope.datas).then(function(data) {
       $scope.statusCode=data.status;
       $scope.msg=data.data.msg;
@@ -1077,13 +1080,15 @@ $scope.handler=function(e,files)
       $scope.portals=data.data.portals;
       $scope.onlineSalesList=data.data.onlineSalesList;           
       $("#MyFile").val('');
+      $scope.loading=false;
      },function(data){
       
     $scope.statusCode=data.status;
     $scope.msg=data.data.msg;
     $scope.notification=true;
     $scope.portals=data.data.portals;
-    $scope.onlineSalesList=data.data.onlineSalesList;            
+    $scope.onlineSalesList=data.data.onlineSalesList; 
+    $scope.loading=false;           
     $("#MyFile").val('');
                  
      });
