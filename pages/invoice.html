@@ -1,0 +1,109 @@
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="page-header">Invoice</h1>
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->     
+            
+<script type="text/ng-template" id="customTemplate.html">
+  <a>
+      <span bind-html-unsafe="match.label | typeaheadHighlight:query"></span>
+      <i>({{match.model.id}})</i>
+  </a>
+</script>
+
+<div id="invoice" class="invoice">
+    <div class="row">
+      <div class="col-xs-12 heading">
+        INVOICE
+      </div>
+    </div>
+    <div class="row branding">
+      <div class="col-xs-6">
+        <div class="invoice-number-container">
+          <label for="invoice-number">Order Number #{{invoice.invoice_number}}</label>
+        </div>
+      </div>
+      <div class="col-xs-6 logo-container">
+        <input type="file" id="imgInp" />
+        <img ng-hide="logoRemoved" id="company_logo" ng-src="{{ logo }}" alt="your image" width="300" />
+        <div>
+          <div class="noPrint" ng-hide="printMode">
+            <a ng-click="editLogo()" href >Edit Logo</a>
+            <a ng-click="toggleLogo()" id="remove_logo" href >{{ logoRemoved ? 'Show' : 'Hide' }} logo</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row infos">
+      <div class="col-xs-6">
+        <div class="input-container"><input type="text" ng-model="invoice.customer_info.name"/></div>
+        <div class="input-container"><input type="text" ng-model="invoice.customer_info.web_link"/></div>
+        <div class="input-container"><input type="text" ng-model="invoice.customer_info.address1"/></div>
+        <div class="input-container"><input type="text" ng-model="invoice.customer_info.address2"/></div>
+        <div class="input-container"><input type="text" ng-model="invoice.customer_info.postal"/></div>
+       
+      </div>
+      <div class="col-xs-6 right">
+        <div class="input-container"><input type="text" ng-model="invoice.company_info.name"/></div>
+        <div class="input-container"><input type="text" ng-model="invoice.company_info.web_link"/></div>
+        <div class="input-container"><input type="text" ng-model="invoice.company_info.address1"/></div>
+        <div class="input-container"><input type="text" ng-model="invoice.company_info.address2"/></div>
+        <div class="input-container"><input type="text" ng-model="invoice.company_info.postal"/></div>
+      </div>
+    </div>
+    <div class="items-table">
+      <div class="row header">
+        <div class="col-xs-1">&nbsp;</div>
+        <div class="col-xs-5">Description</div>
+        <div class="col-xs-2">Quantity</div>
+        <div class="col-xs-2">Cost {{currencySymbol}}</div>
+        <div class="col-xs-2 text-right">Total</div>
+      </div>
+      <div class="row invoice-item" ng-repeat="item in invoice.items" ng-animate="'slide-down'">
+        <div class="col-xs-1 remove-item-container">
+          <a href ng-hide="printMode" ng-click="removeItem(item)" class="btn btn-danger noPrint">[X]</a>
+        </div>
+        <div class="col-xs-5 input-container">
+          <!--<input ng-model="item.description" placeholder="Description" />-->
+          <input type="text" ng-model="item.description" placeholder="Description" typeahead="c as c.sku_id for c in countries | filter:$viewValue | limitTo:10" typeahead-min-length='1' typeahead-on-select='onSelectPart($item, $model, $label)' typeahead-template-url="customTemplate.html">
+        </div>
+        <div class="col-xs-2 input-container">
+          <input ng-model="item.qty" value="1" size="4" ng-required ng-validate="integer" placeholder="Quantity" />
+        </div>
+        <div class="col-xs-2 input-container">
+          <input ng-model="item.cost" value="0.00" ng-required ng-validate="number" size="6" placeholder="Cost" />
+        </div>
+        <div class="col-xs-2 text-right input-container">
+          {{item.cost * item.qty | currency: currencySymbol}}
+        </div>
+      </div>
+      <div class="row invoice-item noPrint" ng-hide="printMode">
+        <div class="col-xs-12 add-item-container">
+          <a class="btn btn-primary" href ng-click="addItem()" >[+]</a>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-10 text-right">Sub Total</div>
+        <div class="col-xs-2 text-right">{{invoiceSubTotal() | currency: currencySymbol}}</div>
+      </div>
+      <div class="row">
+        <div class="col-xs-10 text-right">Tax(%): <input ng-model="invoice.tax" ng-validate="number" style="width:43px"></div>
+        <div class="col-xs-2 text-right">{{calculateTax() | currency: currencySymbol}}</div>
+      </div>
+      <div class="row">
+        <div class="col-xs-10 text-right">Grand Total:</div>
+        <div class="col-xs-2 text-right">{{calculateGrandTotal() | currency: currencySymbol}}</div>
+      </div>
+    </div>
+    <div class="row noPrint actions">
+      <a href="javascript:void(0)" class="btn btn-primary" ng-show="printMode" ng-click="printInfo()" id="btnPrint">Print</a>
+      <a href="javascript:void(0)" class="btn btn-primary" ng-click="clearLocalStorage()">Reset</a>
+      <a href="javascript:void(0)" class="btn btn-primary" ng-hide="printMode" ng-click="printMode = true;">Turn On Print Mode</a>
+      <a href="javascript:void(0)" class="btn btn-primary" ng-show="printMode" ng-click="printMode = false;">Turn Off Print Mode</a>
+    </div>
+  </div>           
+            
+        

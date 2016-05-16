@@ -1,0 +1,204 @@
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="page-header">Sales details</h1>
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+
+<script type="text/ng-template" id="productTemplate.html">
+  <a>
+      <span bind-html-unsafe="match.label | typeaheadHighlight:query"></span>      
+  </a>
+</script>
+
+            <div class="row">
+
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            Upload Sales
+                        </div>
+                        <div class="panel-body">
+
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="alert" data-ng-class="{'alert-success':statusCode=='200','alert-danger':statusCode=='400'}" ng-show="notification">                                
+
+                                   <span ng-show="statusCode=='200'"><strong>Success!</strong></span> <span ng-show="statusCode=='400'"><strong>Failure!</strong></span> {{msg}}
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <ul class="nav nav-tabs" id="myTab">
+                                    <li  data-ng-class="{'active':importTab==true}" ng-click="importTab=true;manualTab=false"><a data-target="#import" data-toggle="tab">Import</a></li>
+                                    <li data-ng-class="{'active':manualTab==true}" ng-click="importTab=false;manualTab=true"><a data-target="#manual" data-toggle="tab">Manual</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-lg-4">
+                                 <div class="tab-content panel-body">
+                                  <div class="tab-pane" id="import" data-ng-class="{'active':importTab}">
+                                    <form role="form">                                       
+                                        <div class="form-group">
+                                            <label>File input</label>
+                                            <input type="file" file-change="handler($event,files)" ng-model="MyFiles" id="MyFile">
+                                            
+                                        </div>
+
+                                    </form>
+                                    </div>
+
+
+                                <div class="tab-pane" id="manual" data-ng-class="{'active':manualTab}">
+                                    <form role="form" name="manulForm" novalidate data-ng-submit="manulForm.$valid&&saveManualEntry()">
+
+                                    <div class="form-group"  data-ng-class="{'has-error':manulForm.sku_id.$invalid&&(manulForm.sku_id.$dirty||manulForm.sku_id.$touched||formSubmitted)}">
+                                    <label class="control-label">SKU ID</label>
+                               
+                                       <input type="text"  name="sku_id" ng-model="prod.sku_id" placeholder="SKU ID" typeahead="c as c.sku_id for c in prod_list | filter:$viewValue" typeahead-min-length='1' typeahead-on-select='onSelectPart($item, $model, $label)' typeahead-template-url="productTemplate.html" class="form-control" required autocomplete="off" data-ng-disabled="editMode">                                       
+                                    <div class="help-block with-errors" data-ng-show="manulForm.sku_id.$invalid&&(manulForm.sku_id.$dirty||manulForm.sku_id.$touched||formSubmitted)">                         
+                                                <ul class="list-unstyled">
+                                                <li>This is required field</li>          
+                                                </ul>
+                                            </div>
+
+                                    </div>
+
+                                    <div class="form-group" data-ng-class="{'has-error':manulForm.qty.$invalid&&(manulForm.qty.$dirty||manulForm.qty.$touched||formSubmitted)}">
+                                    <label class="control-label">Quantity</label>
+                                    <input class="form-control" type="text" name="qty" data-ng-model="prod.qty" required numbers-only>
+                                    <div class="help-block with-errors" data-ng-show="manulForm.qty.$invalid&&(manulForm.qty.$dirty||manulForm.qty.$touched||formSubmitted)">                         
+                                                <ul class="list-unstyled">
+                                                <li>This is required field</li>          
+                                                </ul>
+                                     </div>
+                                    </div>
+
+                                    <div class="form-group" data-ng-class="{'has-error':manulForm.portal.$invalid&&(manulForm.portal.$dirty||manulForm.portal.$touched||formSubmitted)}">
+                                    <label class="control-label">Portal/Cus name</label>
+                                    <input class="form-control" type="text" name="portal" data-ng-model="prod.portal" required>
+                                    <div class="help-block with-errors" data-ng-show="manulForm.portal.$invalid&&(manulForm.portal.$dirty||manulForm.portal.$touched||formSubmitted)">                         
+                                                <ul class="list-unstyled">
+                                                <li>This is required field</li>          
+                                                </ul>
+                                     </div>
+                                    </div>
+                                    <div class="form-group" data-ng-class="{'has-error':manulForm.sales_date.$invalid&&(manulForm.sales_date.$dirty||manulForm.sales_date.$touched||formSubmitted)}">
+                                    <label class="control-label">Sales Date</label>
+                                    <p class="input-group date">
+                                    <input class="form-control datepicker" type="text" name="sales_date" id="sales_date" ng-model="prod.sales_date" required  ui-date-picker>
+                                     <span class="input-group-btn calendaricon">
+                                    <button type="button" class="btn btn-default"><i class="glyphicon glyphicon-calendar"></i></button>
+                                  </span>    
+                                    </p>
+                                    
+                                    <div class="help-block with-errors" data-ng-show="manulForm.sales_date.$invalid&&(manulForm.sales_date.$dirty||manulForm.sales_date.$touched||formSubmitted)">                         
+                                                <ul class="list-unstyled">
+                                                <li>This is required field</li>          
+                                                </ul>
+                                     </div>
+                                    </div>  
+
+                                    <div class="form-group" data-ng-class="{'has-error':manulForm.remark.$invalid&&(manulForm.remark.$dirty||manulForm.remark.$touched||formSubmitted)}">
+                                    <label class="control-label">Remarks/Notes</label>
+                                    <input class="form-control" type="text" name="remark" data-ng-model="prod.remark">
+                                    <div class="help-block with-errors" data-ng-show="manulForm.remark.$invalid&&(manulForm.remark.$dirty||manulForm.remark.$touched||formSubmitted)">                         
+                                                <ul class="list-unstyled">
+                                                <li>This is required field</li>          
+                                                </ul>
+                                     </div>
+                                    </div>
+                                 
+                                     <button type="submit" class="btn btn-success" data-ng-click="formSubmitted=true;" data-ng-show="!editMode">Save</button>
+                                
+                                    <button type="submit" class="btn btn-success" data-ng-click="formSubmitted=true;" data-ng-show="editMode">Update</button>
+                                   
+                                      <button type="button" class="btn btn-success" data-ng-click="reset();editMode=false;">{{editMode?'Cancel':'Reset'}}</button>  
+                                    </form> 
+                                </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                            <!-- /.row (nested) -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                    <!-- /.panel -->
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            Sales Details
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div class="panel-body table-responsive">
+                            <div class="form-group">
+                           <button type="button" class="btn btn-primary btn-lg" id="salesload" data-loading-text="<i class='fa fa-spinner fa-spin '></i> Uploading Sales" sales-loader process-type="sales">Submit Sales</button>
+                           </div>
+                            <div class="dataTable_wrapper">
+                                <table class="table table-striped table-bordered table-hover" id="dataTables-stock">
+                                    <thead>
+                                        <tr>
+                                            
+                                            <th>SKU ID</th>
+                                            <th>Quantity</th>
+                                            <th>Portal</th>
+                                            <th>Upload By</th>
+                                            <th>Sales Date</th>
+                                            <th>Remark</th>
+                                            <!--<th>Created at</th>-->
+                                            <th>Processd</th>                             
+                                            <th>Actions</th>                                             
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr data-ng-class-odd="odd" data-ng-class-even="even" data-ng-repeat="prod in prod_sales_list">
+                                            
+                                            <td>{{prod.sku_id}}</td>
+                                            <td>{{prod.qty}}</td>
+                                            <td>{{prod.portal}}</td>
+                                            <td>{{prod.upload_by}}</td>
+                                            <td>{{prod.sales_date|datefilter}}</td>
+                                            <td>{{prod.remark}}</td>          
+                                            <!--<td>{{prod.created_at|datefilter}}</td>-->
+                                            <td>{{prod.status==0?'NO':'YES'}}</td>    
+                                            <td>
+                                            <table>
+                                            <tr>
+                                            <td>                                                                                             
+                                            <button type="button" class="btn btn-success btn-sm" data-ng-click="editprod(prod)" ng-disabled="{{!((currentUser.user_type==1 && prod.status==0)||(currentUser.user_id==prod.id_upload && prod.status==0))}}">
+                                              <span class="glyphicon glyphicon-edit" ></span> Edit
+                                            </button>
+                                            </td>
+                                            <td>
+                                             <button type="button" class="btn btn-danger btn-sm" data-ng-click="delete_prod(prod)" data-ng-disabled="{{!((currentUser.user_type==1)||(currentUser.user_id==prod.id_upload))}}">
+                                              <span class="glyphicon glyphicon-remove"></span> Remove 
+                                            </button>
+                                            </td>
+                                        </tr>
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- /.table-responsive -->
+
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                    <!-- /.panel -->
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->

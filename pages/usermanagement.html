@@ -1,0 +1,145 @@
+
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="page-header">User Management</h1>
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+
+            <div class="row">
+
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading" id="adduser">
+                           Add User
+                        </div>
+                        <div class="panel-body">
+
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="alert" data-ng-class="{'alert-success':statusCode=='200','alert-danger':statusCode=='400'}" ng-show="notification">                                
+
+                                   <span ng-show="statusCode=='200'"><strong>Success!</strong></span> <span ng-show="statusCode=='400'"><strong>Failure!</strong></span> {{msg}}
+                                    </div>
+
+                                </div>
+                                </div>
+                            <div class="row">
+                                <div class="col-lg-4">
+                                    <form role="form" name="userform" novalidate data-ng-submit="userform.$valid&&saveUser()">                                       
+                                        <div class="form-group" data-ng-class="{'has-error':userform.name.$invalid&&(userform.name.$dirty||userform.name.$touched||formSubmitted)}">
+                                            <label class="control-label">Name</label>
+                                            <input class="form-control" name="name" data-ng-model="user.name" required>                                       
+                                            <div class="help-block with-errors" data-ng-show="userform.name.$invalid&&(userform.name.$dirty||userform.name.$touched||formSubmitted)">
+                                                <ul class="list-unstyled">
+                                                <li data-ng-show="userform.name.$error.required">This is required field</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                       <div class="form-group" data-ng-class="{'has-error':userform.email.$invalid&&(userform.email.$dirty||userform.email.$touched||formSubmitted)}">
+                                            <label class="control-label">Email</label>
+                                            <input type="email" class="form-control" name="email" data-ng-model="user.email" required ng-disabled="isEditForm">
+                                            <div class="help-block with-errors" data-ng-show="userform.email.$invalid&&(userform.email.$dirty||userform.email.$touched||formSubmitted)">                         
+                                                <ul class="list-unstyled">
+                                                <li data-ng-show="userform.email.$error.required">This is required field</li>
+                                                  <li data-ng-show="userform.email.$error.email">Invalid email</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                       <div class="form-group" data-ng-class="{'has-error':userform.password.$invalid&&(userform.password.$dirty||userform.password.$touched||formSubmitted)}">
+                                            <label class="control-label">Password</label>
+                                            <input class="form-control" type="password" data-ng-model="user.password" name="password" data-ng-required="pwdRequired">
+                                            <div class="help-block with-errors" data-ng-show="userform.password.$invalid&&(userform.password.$dirty||userform.password.$touched||formSubmitted)">                         
+                                                <ul class="list-unstyled">
+                                                <li data-ng-show="userform.password.$error.required">This is required field</li>   
+                                                </ul>
+                                            </div>
+                                        </div>
+                                       <div class="form-group" data-ng-class="{'has-error':userform.usertype.$invalid&&(userform.usertype.$dirty||userform.usertype.$touched||formSubmitted)}">
+                                            <label class="control-label">User Type</label>                  
+                                            <select data-ng-model="user.usertype" name="usertype" class="form-control" ng-options="usertype.name for usertype in userTypes" required data-ng-disabled="isEditForm">
+                                                <option value="">-- Select --</option>
+                                            </select>
+                                            <div class="help-block with-errors" data-ng-show="userform.usertype.$invalid&&(userform.usertype.$dirty||userform.usertype.$touched||formSubmitted)">                         
+                                                <ul class="list-unstyled">
+                                                <li data-ng-show="userform.usertype.$error.required">This is required field</li>   
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div data-ng-hide="isEditForm">
+                                        <button type="submit" data-ng-click="formSubmitted=true;" class="btn btn-success">Save</button>
+                                        <button type="button" class="btn btn-success" data-ng-click="reset()">Reset</button>
+                                        </div>
+                                        <div data-ng-show="isEditForm">
+                                        <button type="submit" class="btn btn-success">Update</button>
+                                        <button type="button" class="btn btn-success" data-ng-click="cancel()">Cancel</button>
+                                        </div>
+                                    </form>
+                                </div>
+                                
+                            </div>
+                            <!-- /.row (nested) -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                    <!-- /.panel -->
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            View user
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div class="panel-body">
+                            <div class="dataTable_wrapper">
+                                <table class="table table-striped table-bordered table-hover" id="dataTables-users">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>User Type</th>                                       
+                                            <th>Created at</th>
+                                            <th>Action</th>                              
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr data-ng-class-odd="odd" data-ng-class-even="even" data-ng-repeat="user in users">
+                                            <td>{{user.user_id}}</td>
+                                            <td>{{user.user_fullname}}</td>
+                                            <td>{{user.user_email}}</td>
+                                            <td>{{user.name}}</td>                 
+                                            <td>{{user.created_at|datefilter}}</td>
+                                            <td>
+                                            <button type="button" class="btn btn-success btn-sm" data-ng-click="edituser(user)" data-ng-disabled="{{!((currentUser.user_type==1)||(user.user_id==currentUser.user_id))}}">
+                                              <span class="glyphicon glyphicon-edit" ></span> Edit
+                                            </button>
+
+                                            <button type="button" class="btn btn-success btn-sm" data-ng-click="deleteuser(user.user_id)" data-ng-disabled="{{!((currentUser.user_type==1))}}">
+                                              <span class="glyphicon glyphicon-remove"></span> Remove 
+                                            </button>
+                                        </td>
+                                        </tr>
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- /.table-responsive -->
+
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                    <!-- /.panel -->
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+                       
+            
+        
