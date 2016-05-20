@@ -447,7 +447,10 @@ private function getAllReturnList()
 					}
 						$portals=$this->portalList();
 						$onlineSalesList=$this->onlineSalesList();						
-						$data = array('status' => "Success", "portals"=>$portals,"onlineSalesList"=>$onlineSalesList);
+						$orderStatusList=$this->orderStatusList();
+						$shippingStatusList=$this->shippingStatusList();
+						$userlist=$this->getUsers();
+						$data = array('status' => "Success", "portals"=>$portals,"onlineSalesList"=>$onlineSalesList,"orderStatusList"=>$orderStatusList,"shippingStatusList"=>$shippingStatusList,"userlist"=>$userlist);
 						$this->response($this->json($data), 200);
 		}
 
@@ -641,11 +644,43 @@ private function getAllReturnList()
 
 		private function onlineSalesList()
 	{
-					$prod_list_sql = mysql_query("SELECT os.*,u.user_fullname,po.portal_name,po.id as portal_id,ss.ss_name,ors.os_name,ffy.ff_type_name from online_sales os LEFT JOIN users u on u.user_id=os.upload_by LEFT JOIN portals po ON po.id=os.portal LEFT JOIN shipping_status ss ON ss.id=os.shipping_status LEFT JOIN order_status ors ON ors.id=os.order_status LEFT JOIN full_filement_types ffy ON ffy.id=os.fullfilement_type order by os.invoice_date desc");
+					$prod_list_sql = mysql_query("SELECT os.*,u.user_fullname,au.user_fullname as assigned_name, po.portal_name,po.id as portal_id,ss.ss_name,ors.os_name,ffy.ff_type_name from online_sales os LEFT JOIN users u on u.user_id=os.upload_by LEFT JOIN portals po ON po.id=os.portal LEFT JOIN shipping_status ss ON ss.id=os.shipping_status LEFT JOIN order_status ors ON ors.id=os.order_status LEFT JOIN full_filement_types ffy ON ffy.id=os.fullfilement_type LEFT JOIN users au ON au.user_id=os.assign_to  order by os.invoice_date desc");
 					$my_prod = array();
 					if(mysql_num_rows($prod_list_sql) > 0){
 						
 						while($row = mysql_fetch_assoc($prod_list_sql)){
+						  $my_prod[] = $row;
+						  
+						}
+						
+					}
+
+					return $my_prod;
+	}
+
+		private function orderStatusList()
+	{
+					$order_status_sql = mysql_query("SELECT * FROM order_status");
+					$my_prod = array();
+					if(mysql_num_rows($order_status_sql) > 0){
+						
+						while($row = mysql_fetch_assoc($order_status_sql)){
+						  $my_prod[] = $row;
+						  
+						}
+						
+					}
+
+					return $my_prod;
+	}
+
+		private function shippingStatusList()
+	{
+					$shipping_status_sql = mysql_query("SELECT * FROM shipping_status");
+					$my_prod = array();
+					if(mysql_num_rows($shipping_status_sql) > 0){
+						
+						while($row = mysql_fetch_assoc($shipping_status_sql)){
 						  $my_prod[] = $row;
 						  
 						}
@@ -962,7 +997,7 @@ private function brands()
 			$sql.='portal varchar (255),';
 
 			$custom_column=["shipping_status","delivered_date","order_status","upload_by","fullfilement_type","portal"];
-			$custom_row=["1","","1",$current_user_id,"",$portal_id];
+			$custom_row=["1","","1",$current_user_id,"1",$portal_id];
 
 			if($portal_id==1) //Flipkart
 			{
@@ -1108,6 +1143,95 @@ private function brands()
 			}
 
 		}
+
+private function updateOrderStatus()
+{
+	try
+	{
+		if($this->get_request_method() != "POST")
+		{
+			$this->response('',406);
+		}
+
+		foreach ($this->_request['orders'] as $order) 
+		{
+				
+				$orderstatus_id=$order['orderstatus_id'];
+				$order_id=$order['order_id'];
+				$portal_id=$order['portal_id'];		
+				$sql="UPDATE online_sales set order_status=$orderstatus_id where order_id='$order_id' and portal=$portal_id";						
+				if(!mysql_query($sql))
+				{
+					throw new Exception (mysql_error());
+				}		
+		}
+		$data = array('status' => "Success", "msg" => 'Order Status updated successfully');
+			$this->response($this->json($data),200);
+
+	}
+	catch (Exception $e) 
+	{
+			$data = array('status' => "Failure", "msg" => $e->getMessage());
+			$this->response($this->json($data),400);		
+	}
+}
+
+private function assignOrders()
+{
+	try
+	{
+		if($this->get_request_method() != "POST")
+		{
+			$this->response('',406);
+		}
+		$assignTo=$this->_request['assignto'];
+
+		foreach ($this->_request['orders'] as $orderId)
+		{
+													
+				$sql="UPDATE online_sales set assign_to=$assignTo where id=$orderId";				
+				if(!mysql_query($sql))
+				{
+					throw new Exception (mysql_error());
+				}
+		}
+
+		$portals=$this->portalList();
+		$onlineSalesList=$this->onlineSalesList();						
+		$orderStatusList=$this->orderStatusList();
+		$shippingStatusList=$this->shippingStatusList();
+		$userlist=$this->getUsers();
+		$data = array('status' => "Success", "msg" => 'Orders Assigned successfully', "portals"=>$portals,"onlineSalesList"=>$onlineSalesList,"orderStatusList"=>$orderStatusList,"shippingStatusList"=>$shippingStatusList,"userlist"=>$userlist);
+		$this->response($this->json($data), 200);		
+
+	}
+	catch (Exception $e) 
+	{
+			$data = array('status' => "Failure", "msg" => $e->getMessage());
+			$this->response($this->json($data),400);		
+	}
+}
+
+private function deleteOnlineSales()
+{
+	// Cross validation if the request method is DELETE else it will return "Not Acceptable" status
+	if($this->get_request_method() != "DELETE"){
+	$this->response('',406);
+	}
+	$id = (int)$this->_request['id'];
+
+	if($id > 0){				
+		mysql_query("DELETE FROM online_sales WHERE id = $id");
+		$portals=$this->portalList();
+		$onlineSalesList=$this->onlineSalesList();						
+		$orderStatusList=$this->orderStatusList();
+		$shippingStatusList=$this->shippingStatusList();
+		$userlist=$this->getUsers();
+		$data = array('status' => "Success", "msg" => 'Sales details deleted successfully', "portals"=>$portals,"onlineSalesList"=>$onlineSalesList,"orderStatusList"=>$orderStatusList,"shippingStatusList"=>$shippingStatusList,"userlist"=>$userlist);
+		$this->response($this->json($data), 200);
+	}else
+	$this->response('',204);	// If no records "No Content" status
+}
 
 		private function json($data){
 			if(is_array($data)){

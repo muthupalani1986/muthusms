@@ -26,6 +26,10 @@ app.service('LocalStorage', [function() {
     return !(localStorage['invoice'] == '' || localStorage['invoice'] == null);
   };
 
+  var hasOrdersWithSatus = function() {
+    return !(localStorage['ordersWithSatus'] == '' || localStorage['ordersWithSatus'] == null);
+  };
+
   // Returns a stored invoice (false if none is stored)
   Service.getInvoice = function() {
     if (hasInvoice()) {
@@ -55,6 +59,22 @@ app.service('LocalStorage', [function() {
     Service.clearLogo();
   };
 
+ Service.getOrdersWithStatus = function() {
+    if (hasOrdersWithSatus()) {
+      return JSON.parse(localStorage['ordersWithSatus']);
+    } else {
+      return false;
+    }
+  };
+
+  Service.setOrdersWithStatus = function(ordersWithSatus) {
+    localStorage['ordersWithSatus'] = JSON.stringify(ordersWithSatus);
+  };
+
+  Service.clearOrdersWithSatus = function() {
+    localStorage['ordersWithSatus'] = '';
+  };
+  
   return Service;
 
 }]);

@@ -1,4 +1,4 @@
-app.constant("DOMAIN","http://localhost/stock_management");
+app.constant("DOMAIN","http://localhost/SMS");
 app.constant("UPLOAD_STOCK_URL","/api/api.php?rquest=uploadStock");
 app.constant("UPLOAD_SALES_URL","/api/api.php?rquest=uploadSales");
 app.constant("UPLOAD_RETURN_URL","/api/api.php?rquest=uploadReturn");
@@ -18,6 +18,9 @@ app.constant("DELETE_RETURN","/api/api.php?rquest=deleteReturn");
 app.constant("STOCK_DETAILS_URL","/api/api.php?rquest=stockDetails");
 app.constant("PORTAL","/api/api.php?rquest=getAllPortals");
 app.constant("ONLINE_SALES_URL","/api/api.php?rquest=saveOnlineSales");
+app.constant("DELETE_ONLINE_SALES_URL","/api/api.php?rquest=deleteOnlineSales");
+app.constant("ONLINE_ORDER_STATUS_URL","/api/api.php?rquest=updateOrderStatus");
+app.constant("ASSIGN_ORDERS_URL","/api/api.php?rquest=assignOrders");
 app.constant("API_ERROR","Error while processing your request");
 app.constant("uerTypes", [{"id": "1","name":"Super Admin"},{"id":"2","name":"Admin"}]);
 app.constant('DEFAULT_LOGO', 'images/metaware_logo.png');

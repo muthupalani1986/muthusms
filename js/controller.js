@@ -595,8 +595,7 @@ $scope.handler=function(e,files)
     $scope.editMode=true;    
     var masterCopy=angular.copy(prod);
     $scope.prod=masterCopy;
-    $scope.prod.return_date=$filter('datefilter')($scope.prod.return_date); 
-    console.log($scope.prod);  
+    $scope.prod.return_date=$filter('datefilter')($scope.prod.return_date);     
     $timeout(function() {$('.datepicker').datepicker('update');}, 0);
   }
 
@@ -853,8 +852,7 @@ app.factory("dateService",function(){
   
 return{    
     isLoggedIn : function(){        
-        var currentUser=window.localStorage.getItem("currentUser");
-        console.log(currentUser);
+        var currentUser=window.localStorage.getItem("currentUser");        
         if(currentUser===null||typeof currentUser=='undefined')
         {          
           return false;
@@ -984,11 +982,12 @@ app.controller('DatepickerPopupDemoCtrl', function ($scope) {
   }
 });
 
-app.controller('onlineSales',function($scope,$http,onlineSalesList,DOMAIN,ONLINE_SALES_URL,$timeout){
+app.controller('onlineSales',function($scope,$http,onlineSalesList,DOMAIN,ONLINE_SALES_URL,$timeout,ASSIGN_ORDERS_URL,DELETE_ONLINE_SALES_URL){
 $scope.$parent.loaded=true;
 $scope.$parent.title="Online Sales Details";
 $scope.portals=onlineSalesList.portals;
 $scope.onlineSalesList=onlineSalesList.onlineSalesList;
+$scope.userlist=onlineSalesList.userlist;
 $scope.loading=false;
 $scope.handler=function(e,files)
 {
@@ -1123,34 +1122,34 @@ $scope.handler=function(e,files)
 
     if(typeof filterPortal!="undefined" && typeof filterFromDate!="undefined" && typeof filterToDate!="undefined")
     {
-      console.log("All Selected");
+      
       filterCase=1;
     }
     else if(typeof filterPortal!="undefined" && typeof filterFromDate=="undefined" && typeof filterToDate=="undefined")
     {
-      console.log("port only selected");
+      
       filterCase=2;
     }
     else if(typeof filterPortal=="undefined" && typeof filterFromDate!="undefined" && typeof filterToDate!="undefined")
     {
-      console.log("Date range selected");
+      
       filterCase=3
     }
     else if(typeof filterPortal=="undefined" && typeof filterFromDate!="undefined" && typeof filterToDate=="undefined")
     {
-      console.log("only from date seleced");
+      
       filterCase=4
     }
 
     else if(typeof filterPortal!="undefined" && typeof filterFromDate!="undefined" && typeof filterToDate=="undefined")
     {
-      console.log("only from date with portal seleced");
+      
       filterCase=5;
     }
 
     else
     {
-      console.log("Nothing seleced");
+      
       filterCase=0;
     }
 
@@ -1210,17 +1209,6 @@ $scope.handler=function(e,files)
       {
         result.push(item);
       }
-
-     
-
-     /* if(item.portal.toLowerCase().indexOf($scope.filterPortal.id) !== -1)
-      {
-          console.log(new Date(item.invoice_date));
-            result.push(item);
-      }*/
-
-
-
      });
     $scope.onlineSalesList=result;
     $scope.dataTableOnlineSales();
@@ -1247,14 +1235,250 @@ $scope.reset = function(){
   $scope.dataTableOnlineSales=function(){
 
   var table = $('#dataTables-onlineSales').DataTable();
+
   table.destroy();
-  $timeout(function() { $('#dataTables-onlineSales').DataTable({ "aaSorting": []});}, 0);
+  $timeout(function() { 
+
+    table=$('#dataTables-onlineSales').DataTable({ "aaSorting": [],'columnDefs': [{
+         'targets': 0,
+         'searchable':false,
+         'orderable':false,
+         'className': 'dt-body-center'
+         
+      }],});
+   
+   
+   $('#onlineSales-select-all').on('click', function(){
+      var rows = table.rows({ 'search': 'applied' }).nodes();
+      $('input[type="checkbox"]', rows).prop('checked', this.checked);
+   });
+
+      // Handle click on checkbox to set state of "Select all" control
+   $('#dataTables-onlineSales tbody').on('change', 'input[type="checkbox"]', function(){
+      // If checkbox is not checked
+      if(!this.checked){
+         var el = $('#onlineSales-select-all').get(0);
+         // If "Select all" control is checked and has 'indeterminate' property
+         if(el && el.checked && ('indeterminate' in el)){
+            // Set visual state of "Select all" control 
+            // as 'indeterminate'
+            el.indeterminate = true;
+         }
+      }
+   });
+
+}, 0);
 
   }
 
  $scope.dataTableOnlineSales();
 
+$scope.assign=function(){
+    var onlineSalesId=[];
+    
+    if(typeof $scope.assignto=="object")
+    {
+
+      $scope.assignForm.assignto.$setValidity("selectFromAuto", true);
+      $('#dataTables-onlineSales tbody input[type="checkbox"]').each(function(){
+        if(this.checked){
+          onlineSalesId.push(this.value);
+        }
+      });
+
+      if(onlineSalesId.length==0)
+      {
+        alert("Select the orders to Assign");
+      }
+      else
+      {
+            $scope.assignProgress=true;
+            var data={"assignto":$scope.assignto.user_id,"orders":onlineSalesId};
+            $http.post(DOMAIN+ASSIGN_ORDERS_URL,data).then(function(data) {
+            $scope.notification=true;
+            $scope.statusCode=data.status;
+            $scope.msg=data.data.msg; 
+            $scope.assignProgress=false;
+            $scope.onlineSalesList=data.data.onlineSalesList;
+            $scope.dataTableOnlineSales();
+            $scope.assignForm.$setPristine();
+            $scope.assignForm.$setUntouched(); 
+            $scope.assignto="";
+            $scope.submitted=false;
+            },function(data){
+            $scope.notification=true;
+            $scope.statusCode=data.status;
+            $scope.msg=data.data.msg; 
+            $scope.assignProgress=false;
+            });
+      }
+
+
+
+    }
+    else
+    {
+     
+      $scope.assignForm.assignto.$setValidity("selectFromAuto", false);
+    }
+}
+
+$scope.removeSales=function(order){
+
+  if(confirm("Are sure want to delete"))
+  {
+          $http.delete(DOMAIN+DELETE_ONLINE_SALES_URL,{params: {id: order.id}}).then(function(data) {
+          $scope.msg=data.data.msg; 
+          $scope.statusCode=data.status;         
+          $scope.notification=true;
+          $scope.onlineSalesList=data.data.onlineSalesList;
+          $scope.dataTableOnlineSales();
+        });
+
+  }
+
+
+}
+
 });
 
 
 
+
+
+app.controller('updateStatus',function($scope,$http,onlineSalesList,DOMAIN,ONLINE_ORDER_STATUS_URL,$timeout,LocalStorage){
+
+$scope.$parent.loaded=true;
+$scope.$parent.title="Update Order Status";
+$scope.portals=onlineSalesList.portals;
+$scope.onlineSalesList=onlineSalesList.onlineSalesList;
+$scope.orderStatusList=onlineSalesList.orderStatusList;
+$scope.shippingStatusList=onlineSalesList.shippingStatusList;
+$scope.orderstatus=$scope.orderStatusList[2];
+$scope.loading=false;
+$scope.ordersWithStatusTemp={items:[]};
+$scope.ordersWithStatus={};
+$scope.orderLocalStorageStatus = LocalStorage.getOrdersWithStatus();
+$scope.ordersProgress=false;
+if($scope.orderLocalStorageStatus)
+{
+  
+  $scope.ordersWithStatusTemp.items=$scope.orderLocalStorageStatus;
+  $scope.ordersWithStatus=$scope.ordersWithStatusTemp.items;
+  
+}
+
+$scope.getOrderIds=function()
+{
+    $scope.orderList=$.grep(onlineSalesList.onlineSalesList,function(element,index)
+    {
+
+      if(element.portal==$scope.portal.id)
+      {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+
+    });
+}
+
+$scope.addOrder=function(){
+  var order_id;
+  if(typeof $scope.order_id=="object")
+  {
+    order_id=$scope.order_id.order_id;
+  }
+  else
+  {
+    order_id=$scope.order_id;
+  }
+  
+  var data={"portal_name":$scope.portal.portal_name,"portal_id":$scope.portal.id,"order_id":order_id,"orderstatus_id":$scope.orderstatus.id,"order_status":$scope.orderstatus.os_name}
+  
+  var returnData=$.grep($scope.ordersWithStatusTemp.items,function(element,index){
+    if(element.order_id==order_id && element.portal_id==$scope.portal.id)
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  });
+
+
+  var orderExists=$.grep($scope.onlineSalesList,function(element,index){
+    if(element.order_id==order_id  && element.portal_id==$scope.portal.id)
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  });
+
+  if(returnData.length==0 && orderExists.length>0)
+  {
+
+    $scope.ordersWithStatusTemp.items.push(data);
+    $scope.ordersWithStatus=$scope.ordersWithStatusTemp.items;
+  }  
+  
+  LocalStorage.setOrdersWithStatus($scope.ordersWithStatusTemp.items);  
+  $scope.order_id="";
+  
+}
+
+$scope.removeOrder=function(order){
+ 
+  $scope.ordersWithStatus=$.grep($scope.ordersWithStatus,function(element,index){
+
+    if(element.order_id==order.order_id && element.portal_id==order.portal_id)
+    {
+      return false;
+    }
+    else
+    {
+      return true;
+    }
+  });
+
+  $scope.ordersWithStatusTemp.items=$.grep($scope.ordersWithStatusTemp.items,function(element,index){
+
+    if(element.order_id==order.order_id && element.portal_id==order.portal_id)
+    {
+      return false;
+    }
+    else
+    {
+      return true;
+    }
+  });
+
+  LocalStorage.clearOrdersWithSatus();
+  LocalStorage.setOrdersWithStatus($scope.ordersWithStatus);   
+}
+$scope.updateOrderStatus=function(){
+$scope.ordersProgress=true;
+var data={"orders":$scope.ordersWithStatus};
+  $http.post(DOMAIN+ONLINE_ORDER_STATUS_URL,data).then(function(data) { 
+    $scope.resetOrder();
+    $scope.notification=true;
+    $scope.statusCode=data.status;
+    $scope.msg=data.data.msg; 
+    $scope.ordersProgress=false;
+  });
+}
+
+$scope.resetOrder=function()
+{
+    LocalStorage.clearOrdersWithSatus();
+    $scope.ordersWithStatus={};
+    $scope.ordersWithStatusTemp={items:[]};
+}
+
+});

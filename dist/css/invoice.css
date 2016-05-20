@@ -151,3 +151,8 @@ body{
   position: relative;
   color: #ce0c15;
 }
+
+.dt-body-center
+{
+  text-align: center;
+}

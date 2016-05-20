@@ -27,6 +27,17 @@ app.config(['$routeProvider',
           })
         }}
       }).
+
+      when('/updateStatus', {
+        templateUrl: 'update_status.html',
+        controller: 'updateStatus',
+        resolve:{onlineSalesList:function($http,DOMAIN,PORTAL){
+          return $http.get(DOMAIN+PORTAL).then(function(data) { 
+           
+            return data.data;
+          })
+        }}
+      }).
       when('/users', {
         templateUrl: 'usermanagement.html',
         controller: 'userManager'
