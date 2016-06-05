@@ -1239,13 +1239,7 @@ $scope.reset = function(){
   table.destroy();
   $timeout(function() { 
 
-    table=$('#dataTables-onlineSales').DataTable({ "aaSorting": [],'columnDefs': [{
-         'targets': 0,
-         'searchable':false,
-         'orderable':false,
-         'className': 'dt-body-center'
-         
-      }],});
+    table=$('#dataTables-onlineSales').DataTable();
    
    
    $('#onlineSales-select-all').on('click', function(){
@@ -1481,4 +1475,73 @@ $scope.resetOrder=function()
     $scope.ordersWithStatusTemp={items:[]};
 }
 
+});
+
+app.controller('assignOrder',function($scope,$http,portals,DOMAIN,ORDER_ASSIGN_DETAILS_URL,$timeout){
+$scope.portals=portals.portals;
+$scope.$parent.loaded=true;
+$scope.edit=false;
+$scope.getorders=function()
+  {
+      if(typeof $scope.portal!="undefined")
+      {
+        $scope.$parent.loaded=false;
+        $http.get(DOMAIN+ORDER_ASSIGN_DETAILS_URL,{params: {portal_id: $scope.portal.id}}).then(function(data){
+          $scope.onlineSalesList=data.data.ordersGroupBySku;
+          $scope.userlist=data.data.userlist;
+          $scope.$parent.loaded=true; 
+          $scope.inititalizeTable();
+        });
+
+      }
+      
+  }
+  
+  $scope.edited=function(selectedData)
+  {
+    
+    $scope.selData=selectedData;
+    $scope.assignto="";
+    $scope.remark="";
+    $scope.assignForm.$setPristine();
+    $scope.assignForm.$setUntouched(); 
+    $scope.submitted=false;
+    $scope.edit=true;
+  }
+
+  $scope.assign=function(order)
+  {    
+    
+    if(typeof $scope.assignto=="object")
+    {
+
+      $scope.assignForm.assignto.$setValidity("selectFromAuto", true);
+
+        $http.get(DOMAIN+ORDER_ASSIGN_DETAILS_URL,{params: {portal_id: $scope.portal.id,sku_id:$scope.selData.sku_id,user_id:$scope.assignto.user_id,assign:1,remark:$scope.remark}}).then(function(data){
+          $scope.onlineSalesList=data.data.ordersGroupBySku;
+          $scope.userlist=data.data.userlist;
+          $scope.$parent.loaded=true; 
+          $scope.inititalizeTable();
+        });
+
+      $scope.edit=false;
+    }
+    else
+    {
+      $scope.assignForm.assignto.$setValidity("selectFromAuto", false);
+    }
+
+
+  }
+
+  $scope.inititalizeTable=function()
+  {
+        var table = $('#dataTables-onlineSales').DataTable();
+      table.destroy();
+      $timeout(function() {
+          table=$('#dataTables-onlineSales').DataTable();
+      }, 0);
+  }
+
+  
 });

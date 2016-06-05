@@ -38,6 +38,18 @@ app.config(['$routeProvider',
           })
         }}
       }).
+      when('/assignOrder', {
+        templateUrl: 'assign_order.html',
+        controller: 'assignOrder',
+        resolve:{
+          portals:function($http,DOMAIN,ORDER_ASSIGN_DETAILS_URL){
+          return $http.get(DOMAIN+ORDER_ASSIGN_DETAILS_URL).then(function(data) {
+            return data.data;
+          });
+        }
+        }
+      }).
+
       when('/users', {
         templateUrl: 'usermanagement.html',
         controller: 'userManager'

@@ -641,6 +641,24 @@ private function getAllReturnList()
 
 					return $my_prod;
 	}
+	private function ordersGroupBySku($portal_id)
+	{
+
+
+					$prod_list_sql = mysql_query("SELECT os.*,sum(case when os.order_status=3 then 1 else 0 end) as no_of_order_dispatched,sum(case when os.order_status=1 or os.order_status=3 then 1 else 0 end) as no_of_order,u.user_fullname,au.user_fullname as assigned_name, po.portal_name,po.id as portal_id,ss.ss_name,ors.os_name,ffy.ff_type_name from online_sales os LEFT JOIN users u on u.user_id=os.upload_by LEFT JOIN portals po ON po.id=os.portal LEFT JOIN shipping_status ss ON ss.id=os.shipping_status LEFT JOIN order_status ors ON ors.id=os.order_status LEFT JOIN full_filement_types ffy ON ffy.id=os.fullfilement_type LEFT JOIN users au ON au.user_id=os.assign_to where os.portal=$portal_id group by os.sku_id order by os.id DESC");
+					$my_prod = array();
+					if(mysql_num_rows($prod_list_sql) > 0){
+						
+						while($row = mysql_fetch_assoc($prod_list_sql)){
+						  $my_prod[] = $row;
+						  
+						}
+						
+					}
+
+					return $my_prod;
+
+	}
 
 		private function onlineSalesList()
 	{
@@ -1210,6 +1228,55 @@ private function assignOrders()
 			$data = array('status' => "Failure", "msg" => $e->getMessage());
 			$this->response($this->json($data),400);		
 	}
+}
+
+private function assignOrder($portal_id,$sku_id,$user_id,$remark)
+{
+		mysql_query("UPDATE online_sales set assign_to=$user_id,remark='$remark' where portal=$portal_id and sku_id='$sku_id' and (order_status=1 or order_status=2)");
+
+}
+
+private function getAssignOrderDetails(){
+	try
+	{
+		if($this->get_request_method() != "GET")
+		{
+			$this->response('',406);
+		}
+		$portals=$this->portalList();
+		$portal_id=$this->_request['portal_id'];
+		$sku_id=$this->_request['sku_id'];
+		$user_id=$this->_request['user_id'];
+		$assign=$this->_request['assign'];
+		$remark=$this->_request['remark'];
+		if($assign!="")
+		{
+			$this->assignOrder($portal_id,$sku_id,$user_id,$remark);
+		}
+
+		if($portal_id!="")
+		{
+			$ordersGroupBySku=$this->ordersGroupBySku($portal_id);
+			$userlist=$this->getUsers();
+		}
+		else
+		{
+			$ordersGroupBySku="";
+			$userlist="";
+		}
+
+
+	$data = array('status' => "Success", "portals"=>$portals,"ordersGroupBySku"=>$ordersGroupBySku,"userlist"=>$userlist);
+
+		$this->response($this->json($data), 200);
+	}
+
+	catch (Exception $e) 
+	{
+			$data = array('status' => "Failure", "msg" => $e->getMessage());
+			$this->response($this->json($data),400);		
+	}
+
 }
 
 private function deleteOnlineSales()

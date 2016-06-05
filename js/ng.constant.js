@@ -21,6 +21,7 @@ app.constant("ONLINE_SALES_URL","/api/api.php?rquest=saveOnlineSales");
 app.constant("DELETE_ONLINE_SALES_URL","/api/api.php?rquest=deleteOnlineSales");
 app.constant("ONLINE_ORDER_STATUS_URL","/api/api.php?rquest=updateOrderStatus");
 app.constant("ASSIGN_ORDERS_URL","/api/api.php?rquest=assignOrders");
+app.constant("ORDER_ASSIGN_DETAILS_URL","/api/api.php?rquest=getAssignOrderDetails");
 app.constant("API_ERROR","Error while processing your request");
 app.constant("uerTypes", [{"id": "1","name":"Super Admin"},{"id":"2","name":"Admin"}]);
 app.constant('DEFAULT_LOGO', 'images/metaware_logo.png');
