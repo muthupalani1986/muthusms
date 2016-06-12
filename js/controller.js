@@ -1364,10 +1364,11 @@ if($scope.orderLocalStorageStatus)
 
 $scope.getOrderIds=function()
 {
+  
     $scope.orderList=$.grep(onlineSalesList.onlineSalesList,function(element,index)
     {
 
-      if(element.portal==$scope.portal.id)
+      if(element.portal==$scope.portal.id && (element.order_status=='1' || element.order_status=='2'))
       {
         return true;
       }
@@ -1479,8 +1480,8 @@ $scope.resetOrder=function()
 
 app.controller('assignOrder',function($scope,$http,portals,DOMAIN,ORDER_ASSIGN_DETAILS_URL,$timeout){
 $scope.portals=portals.portals;
-$scope.$parent.loaded=true;
 $scope.edit=false;
+$scope.assignProgress=false;
 $scope.getorders=function()
   {
       if(typeof $scope.portal!="undefined")
@@ -1516,12 +1517,14 @@ $scope.getorders=function()
     {
 
       $scope.assignForm.assignto.$setValidity("selectFromAuto", true);
-
+        $scope.$parent.loaded=false;
+        $scope.assignProgress=true;
         $http.get(DOMAIN+ORDER_ASSIGN_DETAILS_URL,{params: {portal_id: $scope.portal.id,sku_id:$scope.selData.sku_id,user_id:$scope.assignto.user_id,assign:1,remark:$scope.remark}}).then(function(data){
           $scope.onlineSalesList=data.data.ordersGroupBySku;
           $scope.userlist=data.data.userlist;
           $scope.$parent.loaded=true; 
           $scope.inititalizeTable();
+          $scope.assignProgress=false;
         });
 
       $scope.edit=false;
@@ -1543,5 +1546,5 @@ $scope.getorders=function()
       }, 0);
   }
 
-  
+  $scope.$parent.loaded=true;
 });

@@ -645,7 +645,7 @@ private function getAllReturnList()
 	{
 
 
-					$prod_list_sql = mysql_query("SELECT os.*,sum(case when os.order_status=3 then 1 else 0 end) as no_of_order_dispatched,sum(case when os.order_status=1 or os.order_status=3 then 1 else 0 end) as no_of_order,u.user_fullname,au.user_fullname as assigned_name, po.portal_name,po.id as portal_id,ss.ss_name,ors.os_name,ffy.ff_type_name from online_sales os LEFT JOIN users u on u.user_id=os.upload_by LEFT JOIN portals po ON po.id=os.portal LEFT JOIN shipping_status ss ON ss.id=os.shipping_status LEFT JOIN order_status ors ON ors.id=os.order_status LEFT JOIN full_filement_types ffy ON ffy.id=os.fullfilement_type LEFT JOIN users au ON au.user_id=os.assign_to where os.portal=$portal_id group by os.sku_id order by os.id DESC");
+					$prod_list_sql = mysql_query("SELECT os.*,sum(case when os.order_status=1 or os.order_status=2 then 1 else 0 end) as no_of_order,u.user_fullname,au.user_fullname as assigned_name, po.portal_name,po.id as portal_id,ss.ss_name,ors.os_name,ffy.ff_type_name from online_sales os LEFT JOIN users u on u.user_id=os.upload_by LEFT JOIN portals po ON po.id=os.portal LEFT JOIN shipping_status ss ON ss.id=os.shipping_status LEFT JOIN order_status ors ON ors.id=os.order_status LEFT JOIN full_filement_types ffy ON ffy.id=os.fullfilement_type LEFT JOIN users au ON au.user_id=os.assign_to where os.portal=$portal_id and(os.order_status=1 or os.order_status=2) group by os.sku_id order by os.updated_on DESC");
 					$my_prod = array();
 					if(mysql_num_rows($prod_list_sql) > 0){
 						
@@ -1229,6 +1229,7 @@ private function assignOrders()
 			$this->response($this->json($data),400);		
 	}
 }
+
 
 private function assignOrder($portal_id,$sku_id,$user_id,$remark)
 {

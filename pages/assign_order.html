@@ -72,6 +72,7 @@
 
                                         <div class="form-group">
                                         <button type="button" class="btn btn-success" data-ng-click="assign();submitted=true;"><i class="fa fa-spinner fa-spin fa-fw" data-ng-show="assignProgress"></i>Assign</button>
+                                        <button type="button" class="btn btn-success" data-ng-click="edit=false;">Cancel</button>
                                         </div> 
                                     </form>  
                                 </div>
@@ -102,9 +103,7 @@
                                             <th>Portal</th>
                                             <th>SKU ID</th>     
                                             <th>Assigned to</th>
-                                            <th>Order Count</th>                                   
-                                            <th>Dispatched Count</th>
-                                            <th>Pending</th>
+                                            <th>Order Count</th>
                                             <th>Remarks</th>
                                             <th>Actions</th>  
                                         </tr>
@@ -116,8 +115,6 @@
                                             <td>{{sale.sku_id}}</td>
                                             <td>{{sale.assigned_name}}</td>
                                             <td>{{sale.no_of_order}}</td>                
-                                            <td>{{sale.no_of_order_dispatched}}</td>
-                                            <td>{{sale.no_of_order-sale.no_of_order_dispatched}}</td>
                                             <td>{{sale.remark}}</td>
                                             <td>
                                             <table>
