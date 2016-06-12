@@ -1280,6 +1280,88 @@ private function getAssignOrderDetails(){
 
 }
 
+private function uploadSkuMapping(){
+	try
+	{
+		if($this->get_request_method() != "POST")
+		{
+			$this->response('',406);
+		}
+		$skuMapping=array();		
+		foreach( $this->_request['skuMapping'] as $row )
+		{
+			$skuMapping[]='("'.mysql_real_escape_string($row['sku_id']).'","'.mysql_real_escape_string($row['portal_1']).'","'.mysql_real_escape_string($row['portal_2']).'","'.mysql_real_escape_string($row['portal_3']).'","'.mysql_real_escape_string($row['portal_4']).'","'.mysql_real_escape_string($row['remark']).'")';
+		}
+		
+		if(!mysql_query('INSERT INTO sku_mappings (sku_id, portal_1,portal_2,portal_3,portal_4,remark) VALUES '.implode(',', $skuMapping)))
+		{
+			throw new Exception (mysql_error());
+		}
+		$skuMappingList=$this->skuMappingList();
+		$data = array('status' => "Success", "msg" => "SKU mapping uploaded successfully","skuMappingList"=>$skuMappingList);
+		$this->response($this->json($data), 200);
+	}
+
+	catch (Exception $e) 
+	{
+			$data = array('status' => "Failure", "msg" => $e->getMessage());
+			$this->response($this->json($data),400);		
+	}
+
+}
+
+private function getAllSkuMappings(){
+
+	try
+	{
+		if($this->get_request_method() != "GET")
+		{
+			$this->response('',406);
+		}
+		$skuMappingList=$this->skuMappingList();
+		$data = array('status' => "Success", "skuMappingList"=>$skuMappingList);
+		$this->response($this->json($data), 200);
+	}
+
+	catch (Exception $e) 
+	{
+			$data = array('status' => "Failure", "msg" => $e->getMessage());
+			$this->response($this->json($data),400);		
+	}
+
+}
+
+
+private function skuMappingList()
+{
+				$skumapping_list_sql = mysql_query("SELECT * from sku_mappings");
+				$sku_mapping = array();
+				if(mysql_num_rows($skumapping_list_sql) > 0){
+					
+					while($row = mysql_fetch_assoc($skumapping_list_sql)){
+					  $sku_mapping[] = $row;
+					  
+					}
+					
+				}
+
+				return $sku_mapping;
+}
+
+private function deleteSkuMapping(){
+
+	if($this->get_request_method() != "DELETE"){
+	$this->response('',406);
+	}
+	$id = (int)$this->_request['id'];
+	if($id > 0)
+	{
+		mysql_query("DELETE FROM sku_mappings WHERE id = $id");	
+		$skuMappingList=$this->skuMappingList();
+		$data = array('status' => "Success", "msg"=>"Mapping deleted successfully","skuMappingList"=>$skuMappingList);
+		$this->response($this->json($data), 200);
+	}
+}
 private function deleteOnlineSales()
 {
 	// Cross validation if the request method is DELETE else it will return "Not Acceptable" status

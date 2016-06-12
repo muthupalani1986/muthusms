@@ -1548,3 +1548,123 @@ $scope.getorders=function()
 
   $scope.$parent.loaded=true;
 });
+
+app.controller('skuMapping',function($scope,$http,DOMAIN,SKU_MAPPING_URL,All_SKU_MAPPING_URL,DELETE_SKU_MAPPING_URL,$timeout){
+
+  $scope.handler=function(e,files)
+{
+ 
+ try{
+
+      var reader=new FileReader();
+      reader.onload=function(e)
+    {
+      try
+      {
+          var string=reader.result;
+          $scope.skuMappingList = {"skuMapping":[],"currentUser":[]};
+          var retrieveCurrentUser = localStorage.getItem('currentUser');
+          $scope.skuMappingList.currentUser.push(JSON.parse(retrieveCurrentUser));
+          var csvData=string.split('\n');
+
+          for(var i=1;i<csvData.length;i++)
+          {
+
+            var mappingDetails=csvData[i].split(',');
+            if(mappingDetails.length>1)
+            {
+              var obj={};
+              obj.sku_id=mappingDetails[0];
+              obj.portal_1=mappingDetails[1];
+              obj.portal_2=mappingDetails[2];
+              obj.portal_3=mappingDetails[3];
+              obj.portal_4=mappingDetails[4];
+              obj.remark=mappingDetails[5];                            
+              $scope.skuMappingList.skuMapping.push(obj);
+            }
+
+          }
+          console.log($scope.skuMappingList);
+          $scope.saveSkuMapping();
+        }
+          catch(error)
+          {                
+                $scope.$apply(function () {
+                $scope.statusCode="400";
+                $scope.msg=error;
+                $scope.notification=true;
+              });
+                $("#MyFile").val('');
+          }
+
+
+    }
+    var file_ext=files[0].name.split('.').pop();
+      if(file_ext.toLowerCase()!="csv"){
+        throw 'Only csv format allowed';
+      }    
+        reader.readAsText(files[0]);
+
+  }
+
+      catch(error){
+        $scope.statusCode="400";
+        $scope.msg=error;
+        $scope.notification=true;
+        $("#MyFile").val('');
+      }
+}
+
+$scope.saveSkuMapping=function(){
+
+  $http.post(DOMAIN+SKU_MAPPING_URL, $scope.skuMappingList).then(function(data) {
+          $scope.statusCode=data.status;
+          $scope.msg=data.data.msg;
+          $scope.skuMappingList=data.data.skuMappingList;
+          $scope.notification=true;           
+          $("#MyFile").val('');
+          $scope.inititalizeTable();
+  },function(data){
+
+          $scope.statusCode=data.status;
+          $scope.msg=data.data.msg;
+          $scope.notification=true;           
+          $("#MyFile").val('');
+
+  });
+
+}
+$scope.$parent.loaded=false;
+$http.get(DOMAIN+All_SKU_MAPPING_URL).then(function(data) {
+$scope.skuMappingList=data.data.skuMappingList;
+$scope.inititalizeTable();
+$scope.$parent.loaded=true;
+});
+
+  $scope.inititalizeTable=function()
+  {
+        var table = $('#skuMappings').DataTable();
+      table.destroy();
+      $timeout(function() {
+          table=$('#skuMappings').DataTable();
+      }, 0);
+  }
+
+  $scope.removeMapping=function(mapping){
+
+      if(confirm("Are sure want to delete"))
+  {
+      
+          $http.delete(DOMAIN+DELETE_SKU_MAPPING_URL,{params: {id: mapping.id}}).then(function(data) {
+          $scope.msg=data.data.msg; 
+          $scope.statusCode=data.status;         
+          $scope.notification=true;
+          $scope.skuMappingList=data.data.skuMappingList;
+          $scope.inititalizeTable();
+        });
+
+  }
+
+  }
+
+});

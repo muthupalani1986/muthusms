@@ -1,0 +1,108 @@
+
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="page-header">SKU Mapping</h1>
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+
+            <div class="row">
+
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading" id="adduser">
+                           Add Mapping
+                        </div>
+                        <div class="panel-body">
+
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="alert" data-ng-class="{'alert-success':statusCode=='200','alert-danger':statusCode=='400'}" ng-show="notification">                                
+
+                                   <span ng-show="statusCode=='200'"><strong>Success!</strong></span> <span ng-show="statusCode=='400'"><strong>Failure!</strong></span> {{msg}}
+                                    </div>
+
+                                </div>
+                                </div>
+                            <div class="row">
+                                <div class="col-lg-4">
+                                        <form role="form">                                       
+                                            <div class="form-group">
+                                                <label>File input</label>
+                                                <input type="file" file-change="handler($event,files)" ng-model="MyFiles" id="MyFile"/>                
+                                            </div>
+                                        </form>
+                                </div>
+                            
+                            <!-- /.row (nested) -->
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                    <!-- /.panel -->
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            View Details
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div class="panel-body table-responsive">
+                            
+                            <div class="dataTable_wrapper">
+                                <table class="table table-striped table-bordered table-hover" id="skuMappings">
+                                    <thead>
+                                        <tr>                                         
+                                            
+                                            <th>SKU ID</th>     
+                                            <th>Flipkart</th>
+                                            <th>SnapDeal</th>
+                                            <th>ShopClues</th>
+                                            <th>Amazon</th>  
+                                            <th>Remark</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr data-ng-class-odd="odd" data-ng-class-even="even" data-ng-repeat="mapping in skuMappingList">
+                                            
+                                            <td>{{mapping.sku_id}}</td>
+                                            <td>{{mapping.portal_1}}</td>
+                                            <td>{{mapping.portal_2}}</td>
+                                            <td>{{mapping.portal_3}}</td>
+                                            <td>{{mapping.portal_4}}</td>                
+                                            <td>{{mapping.remark}}</td>
+                                            <td>
+                                            <table>
+                                            <tr>
+                                            <td>
+                                            <button type="button" class="btn btn-danger btn-sm" data-ng-click="removeMapping(mapping)">
+                                              <span class="glyphicon glyphicon-remove" ></span> Remove
+                                            </button>
+                                            </td>                                           
+                                            </tr>
+                                            </table>
+                                        </td>
+                                        </tr>
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- /.table-responsive -->
+
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                    <!-- /.panel -->
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+                       
+            
+        
