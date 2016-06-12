@@ -1616,7 +1616,7 @@ app.controller('skuMapping',function($scope,$http,DOMAIN,SKU_MAPPING_URL,All_SKU
 }
 
 $scope.saveSkuMapping=function(){
-
+  $scope.$parent.loaded=false;
   $http.post(DOMAIN+SKU_MAPPING_URL, $scope.skuMappingList).then(function(data) {
           $scope.statusCode=data.status;
           $scope.msg=data.data.msg;
@@ -1624,6 +1624,7 @@ $scope.saveSkuMapping=function(){
           $scope.notification=true;           
           $("#MyFile").val('');
           $scope.inititalizeTable();
+          $scope.$parent.loaded=true;
   },function(data){
 
           $scope.statusCode=data.status;
