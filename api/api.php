@@ -1078,9 +1078,10 @@ private function brands()
 				$sql.='reference_code varchar (255),';
 				$custom_column[]="reference_code";
 				$custom_row[]="012345";
-				$sql.='manifest_id varchar (255),';
+				/*$sql.='manifest_id varchar (255),';
 				$custom_column[]="manifest_id";
 				$custom_row[]="012345";
+				*/
 			}
 
 			if($portal_id==4) //Amazon
