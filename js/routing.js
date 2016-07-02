@@ -61,7 +61,10 @@ app.config(['$routeProvider',
         }
         }
       }).
-
+      when('/validateStock', {
+        templateUrl: 'validate_stock.html',
+        controller: 'validateStock'
+      }).
       when('/users', {
         templateUrl: 'usermanagement.html',
         controller: 'userManager'

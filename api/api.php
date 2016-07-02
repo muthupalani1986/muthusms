@@ -1170,21 +1170,119 @@ private function updateOrderStatus()
 		{
 			$this->response('',406);
 		}
-
+		$errors=array();
+		$error_orderIds=array();
 		foreach ($this->_request['orders'] as $order) 
 		{
 				
 				$orderstatus_id=$order['orderstatus_id'];
 				$order_id=$order['order_id'];
-				$portal_id=$order['portal_id'];		
-				$sql="UPDATE online_sales set order_status=$orderstatus_id where order_id='$order_id' and portal=$portal_id";						
-				if(!mysql_query($sql))
+				$portal_id=$order['portal_id'];
+				$SalesQuantity=$order['quantity'];
+				$salesSKU=$order['sku_id'];
+				$prod_check='SELECT * from products where sku_id="'.$order['sku_id'].'" LIMIT 1';
+				$prod_result=mysql_query($prod_check);
+				$prod_count=mysql_num_rows($prod_result);
+				if($prod_count==0)
 				{
-					throw new Exception (mysql_error());
-				}		
+					$query_portal='';
+					switch ($portal_id) {
+						case '1':
+							$query_portal='portal_1="'.$salesSKU.'"';
+							break;
+						case '2':
+							$query_portal='portal_2="'.$salesSKU.'"';
+							break;
+						case '3':
+							$query_portal='portal_3="'.$salesSKU.'"';
+							break;
+						case '4':
+							$query_portal='portal_4="'.$salesSKU.'"';
+							break;
+						default:
+							# code...
+							break;
+					}
+
+					$skuMapping_sql='SELECT * from sku_mappings where '.$query_portal.' LIMIT 1';
+					$skuMapping_result=mysql_query($skuMapping_sql);
+					$mapping_count=mysql_num_rows($skuMapping_result);
+					if($mapping_count==0)
+					{
+						$errors[]=$order;
+						$error_orderIds[]=$order_id;
+					}
+					else
+					{
+						$skuMappingRow=mysql_fetch_assoc($skuMapping_result);
+						$sku_id=$skuMappingRow['sku_id'];
+						$withMapping_sql='SELECT * from products where sku_id="'.$sku_id.'" LIMIT 1';
+						$withSkuMapping_result=mysql_query($withMapping_sql);
+						$prodCountWithMapping=mysql_num_rows($withSkuMapping_result);
+						if($prodCountWithMapping==0)
+						{
+							$errors[]=$order;
+							$error_orderIds[]=$order_id;
+						}
+						else
+						{
+							$withSkuMapping_Row=mysql_fetch_assoc($withSkuMapping_result);
+							$prod_quantity=$withSkuMapping_Row['qty'];
+							$prod_id=$withSkuMapping_Row['id'];
+							$finalQty=$prod_quantity-$SalesQuantity;
+							$stock_Query="UPDATE products set qty=$finalQty where id=$prod_id";
+							if(!mysql_query($stock_Query))
+							{
+								throw new Exception (mysql_error());
+							}
+
+							$sql="UPDATE online_sales set order_status=$orderstatus_id where order_id='$order_id' and portal=$portal_id";						
+							if(!mysql_query($sql))
+							{
+								throw new Exception (mysql_error());
+							}
+						}
+
+					}
+
+				}
+
+				else
+				{
+					$prodRow=mysql_fetch_assoc($prod_result);
+					$prod_id=$prodRow['id'];
+					$finalQty=$prodRow['qty']-$SalesQuantity;
+					$stock_Query="UPDATE products set qty=$finalQty where id=$prod_id";
+					if(!mysql_query($stock_Query))
+					{
+						throw new Exception (mysql_error());
+					}
+					$sql="UPDATE online_sales set order_status=$orderstatus_id where order_id='$order_id' and portal=$portal_id";						
+					if(!mysql_query($sql))
+					{
+						throw new Exception (mysql_error());
+					}
+				}
+				
+		
 		}
-		$data = array('status' => "Success", "msg" => 'Order Status updated successfully');
-			$this->response($this->json($data),200);
+
+	$errors = array_filter($errors);
+	$error_orderIds = array_filter($error_orderIds);	
+	$onlineSalesList=$this->onlineSalesList();
+	$userlist=$this->getUsers();		
+	if(!empty($error_orderIds))
+	{
+		$msg="Order [".implode(',', $error_orderIds)."] having problem";		
+		$data = array('status' => "Success","onlineSalesList"=>$onlineSalesList,"msg" => $msg,"orders"=>$errors);		
+			$this->response($this->json($data),400);
+	}
+	else
+	{
+		$msg="Order Status updated successfully";
+		$data = array('status' => "Success","onlineSalesList"=>$onlineSalesList,"msg" => $msg);		
+		$this->response($this->json($data),200);
+	}		
 
 	}
 	catch (Exception $e) 
@@ -1362,6 +1460,58 @@ private function deleteSkuMapping(){
 		$this->response($this->json($data), 200);
 	}
 }
+
+private function stockValidation()
+{
+	try
+	{
+		if($this->get_request_method() != "POST")
+		{
+			$this->response('',406);
+		}
+		$stockDetails=array();
+		foreach( $this->_request['stock'] as $stock ){
+		$sku_id=$stock['sku_id'];	
+		//$stockDetails[]=$stock;
+		$prod_sql='SELECT * from products where sku_id="'.$sku_id.'" LIMIT 1';
+		$prod_result=mysql_query($prod_sql);
+		$prod_count=mysql_num_rows($prod_result);
+		if($prod_count==0)
+		{
+			$stock['status']="S404";
+			$stock['details']='Not found';			
+		}
+		else
+		{
+			$prod_row=mysql_fetch_assoc($prod_result);
+			if($prod_row['qty']==$stock['qty'])
+			{
+				$stock['status']="S200";
+				$stock['details']='Matched';
+			}
+
+			else
+			{
+				$MisMatchcount=abs($prod_row['qty']-$stock['qty']);
+				$stock['status']="S202";				
+				$stock['details']='Miss Match: '.$MisMatchcount.' System Qty:'.$prod_row['qty'].' Manual Qty : '.$stock['qty'];			
+			}
+			
+		}
+		$stockDetails[]=$stock;
+		}
+		
+		$data = array('status' => "Success",'msg'=>'Stock details uploaded successfully', "stockDetails"=>$stockDetails);
+		$this->response($this->json($data), 200);
+	}
+	catch (Exception $e) 
+	{
+			$data = array('status' => "Failure", "msg" => $e->getMessage());
+			$this->response($this->json($data),400);		
+	}
+
+}
+
 private function deleteOnlineSales()
 {
 	// Cross validation if the request method is DELETE else it will return "Not Acceptable" status

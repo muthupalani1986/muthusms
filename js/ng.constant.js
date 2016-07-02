@@ -25,6 +25,7 @@ app.constant("ORDER_ASSIGN_DETAILS_URL","/api/api.php?rquest=getAssignOrderDetai
 app.constant("SKU_MAPPING_URL","/api/api.php?rquest=uploadSkuMapping");
 app.constant("All_SKU_MAPPING_URL","/api/api.php?rquest=getAllSkuMappings");
 app.constant("DELETE_SKU_MAPPING_URL","/api/api.php?rquest=deleteSkuMapping");
+app.constant("STOCK_VALIDATION_URL","/api/api.php?rquest=stockValidation");
 app.constant("API_ERROR","Error while processing your request");
 app.constant("uerTypes", [{"id": "1","name":"Super Admin"},{"id":"2","name":"Admin"}]);
 app.constant('DEFAULT_LOGO', 'images/metaware_logo.png');

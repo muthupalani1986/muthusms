@@ -1418,7 +1418,8 @@ $scope.addOrder=function(){
 
   if(returnData.length==0 && orderExists.length>0)
   {
-
+    data['sku_id']=orderExists[0].sku_id;
+    data['quantity']=orderExists[0].quantity;
     $scope.ordersWithStatusTemp.items.push(data);
     $scope.ordersWithStatus=$scope.ordersWithStatusTemp.items;
   }  
@@ -1465,7 +1466,43 @@ var data={"orders":$scope.ordersWithStatus};
     $scope.notification=true;
     $scope.statusCode=data.status;
     $scope.msg=data.data.msg; 
-    $scope.ordersProgress=false;
+    $scope.ordersProgress=false;    
+    $scope.orderList=$.grep(data.data.onlineSalesList,function(element,index)
+    {
+
+      if(element.portal==$scope.portal.id && (element.order_status=='1' || element.order_status=='2'))
+      {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+
+    });
+
+  },function(data){
+    $scope.notification=true;
+    $scope.statusCode=data.status;
+    $scope.msg=data.data.msg; 
+    $scope.ordersProgress=false;    
+    $scope.ordersWithStatus=data.data.orders;
+    $scope.orderList=$.grep(data.data.onlineSalesList,function(element,index)
+    {
+
+      if(element.portal==$scope.portal.id && (element.order_status=='1' || element.order_status=='2'))
+      {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+
+    });
+    LocalStorage.clearOrdersWithSatus();
+    LocalStorage.setOrdersWithStatus(data.data.orders);
+
   });
 }
 
@@ -1669,3 +1706,90 @@ $scope.$parent.loaded=true;
   }
 
 });
+
+app.controller('validateStock',function($scope,$http,DOMAIN,STOCK_VALIDATION_URL,$timeout){
+
+$scope.handler=function(e,files)
+{
+ 
+ try{
+
+      var reader=new FileReader();
+      reader.onload=function(e)
+    {
+      try
+      {
+          var stockData=reader.result;
+          $scope.stockDetails = {"stock":[],"currentUser":[]};
+          var retrieveCurrentUser = localStorage.getItem('currentUser');
+          $scope.stockDetails.currentUser.push(JSON.parse(retrieveCurrentUser));
+          var csvStockData=stockData.split('\n');
+
+          for(var i=1;i<csvStockData.length;i++)
+          {
+
+            var stockDetails=csvStockData[i].split(',');            
+            if(stockDetails.length>1)
+            {
+              var obj={};
+              obj.sku_id=stockDetails[0];
+              obj.qty=stockDetails[1];                                 
+              $scope.stockDetails.stock.push(obj);
+            }
+
+          }
+          
+          $scope.stockValidation();
+        }
+          catch(error)
+          {                
+                $scope.$apply(function () {
+                $scope.statusCode="400";
+                $scope.msg=error;
+                $scope.notification=true;
+              });
+                $("#MyFile").val('');
+          }
+
+
+    }
+    var file_ext=files[0].name.split('.').pop();
+      if(file_ext.toLowerCase()!="csv"){
+        throw 'Only csv format allowed';
+      }    
+        reader.readAsText(files[0]);
+
+  }
+
+      catch(error){
+        $scope.statusCode="400";
+        $scope.msg=error;
+        $scope.notification=true;
+        $("#MyFile").val('');
+      }
+}
+
+$scope.stockValidation=function(){
+    $scope.$parent.loaded=false;
+  $http.post(DOMAIN+STOCK_VALIDATION_URL, $scope.stockDetails).then(function(data) {
+          $scope.statusCode=data.status;
+          $scope.msg=data.data.msg;          
+          $scope.notification=true;           
+          $("#MyFile").val('');
+          $scope.inititalizeTable();
+          $scope.$parent.loaded=true;
+          $scope.stockDetails=data.data.stockDetails;
+  });
+
+}
+
+  $scope.inititalizeTable=function()
+  {
+        var table = $('#stockDetails').DataTable();
+      table.destroy();
+      $timeout(function() {
+          table=$('#stockDetails').DataTable();
+      }, 0);
+  }
+$scope.$parent.loaded=true;
+});  
