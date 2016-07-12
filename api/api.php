@@ -1386,18 +1386,44 @@ private function uploadSkuMapping(){
 		{
 			$this->response('',406);
 		}
-		$skuMapping=array();		
+		$skuMapping=array();
+		$dupSkuMapping=array();		
 		foreach( $this->_request['skuMapping'] as $row )
+		{
+			$dup_sql='SELECT * from sku_mappings WHERE sku_id="'.$row['sku_id'].'" and portal_1="'.$row['portal_1'].'" and portal_2="'.$row['portal_2'].'" and portal_3="'.$row['portal_3'].'"  and portal_4="'.$row['portal_4'].'"';
+			
+			$check_dup=mysql_query($dup_sql);
+
+		if(mysql_num_rows($check_dup) > 0)
+		{
+			$dupSkuMapping[]=$row['sku_id'];
+		}
+		else
 		{
 			$skuMapping[]='("'.mysql_real_escape_string($row['sku_id']).'","'.mysql_real_escape_string($row['portal_1']).'","'.mysql_real_escape_string($row['portal_2']).'","'.mysql_real_escape_string($row['portal_3']).'","'.mysql_real_escape_string($row['portal_4']).'","'.mysql_real_escape_string($row['remark']).'")';
 		}
+
+
+		}
 		
-		if(!mysql_query('INSERT INTO sku_mappings (sku_id, portal_1,portal_2,portal_3,portal_4,remark) VALUES '.implode(',', $skuMapping)))
+		if(sizeof($skuMapping)>0)
 		{
-			throw new Exception (mysql_error());
+			if(!mysql_query('INSERT INTO sku_mappings (sku_id, portal_1,portal_2,portal_3,portal_4,remark) VALUES '.implode(',', $skuMapping)))
+			{
+				throw new Exception (mysql_error());
+			}
+		}
+
+		if(sizeof($dupSkuMapping)==0)
+		{
+			$msg="SKU mapping uploaded successfully";
+		}
+		else
+		{
+			$msg="[".implode(',', $dupSkuMapping)."] Already exists";
 		}
 		$skuMappingList=$this->skuMappingList();
-		$data = array('status' => "Success", "msg" => "SKU mapping uploaded successfully","skuMappingList"=>$skuMappingList);
+		$data = array('status' => "Success", "msg" => $msg,"skuMappingList"=>$skuMappingList);
 		$this->response($this->json($data), 200);
 	}
 

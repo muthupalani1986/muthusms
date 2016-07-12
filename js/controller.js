@@ -780,7 +780,20 @@ $http.get(DOMAIN+USERS_URL).then(function(data) {
 
 app.controller('masterController',function($scope,$location){  
   $scope.getClass = function (path) {
-  return ($location.path().substr(0, path.length) === path) ? 'active' : '';  }
+    var paths=path.split(',');
+    var input=$location.path();    
+    var pathPos = paths.indexOf(input);    
+    if(pathPos>-1)
+    {
+      return 'active';
+    }
+    else
+    {
+      return '';
+    }
+    
+  //return ($location.path().substr(0, path.length) === path) ? 'active' : '';  
+}
 
   $scope.loader = function (path) {
   
@@ -1793,3 +1806,24 @@ $scope.stockValidation=function(){
   }
 $scope.$parent.loaded=true;
 });  
+
+app.controller('salesReport',function($scope,$location){  
+  $scope.$parent.title="Sales Report";
+  $scope.labels = ["January", "February", "March","April","May","June","July","Augut","September","October","November","December"];
+  $scope.data = [300, 500, 100,300, 500, 100,300, 500, 100,300, 500, 100];
+  $scope.$parent.loaded=true;
+});
+
+app.controller('stockReport',function($scope,$location){  
+  $scope.$parent.title="Stock Report";
+  $scope.labels = ["A7101", "B101", "C101","D101"];
+  $scope.data = [10, 20, 5,20];
+  $scope.$parent.loaded=true;
+});
+
+app.controller('returnReport',function($scope,$location){  
+  $scope.$parent.title="Sales Report";
+  $scope.labels = ["January", "February", "March","April","May","June","July","Augut","September","October","November","December"];
+  $scope.data = [300, 500, 100,300, 500, 100,300, 500, 100,300, 500, 100];
+  $scope.$parent.loaded=true;
+});

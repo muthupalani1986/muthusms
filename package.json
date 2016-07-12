@@ -1,0 +1,24 @@
+{
+  "name": "sms",
+  "version": "1.0.0",
+  "description": "Stock management",
+  "main": "index.html",
+  "dependencies": {
+    "angular-chart.js": "^1.0.0-alpha8",
+    "chart.js": "^2.1.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/muthupalani1986/muthusms.git"
+  },
+  "author": "muthukumar",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/muthupalani1986/muthusms/issues"
+  },
+  "homepage": "https://github.com/muthupalani1986/muthusms#readme"
+}

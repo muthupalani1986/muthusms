@@ -73,6 +73,19 @@ app.config(['$routeProvider',
         templateUrl: 'invoice.html',
         controller: 'invoice'
       }).
+
+      when('/salesReport', {
+        templateUrl: 'salesReport.html',
+        controller: 'salesReport'        
+      }).
+      when('/stockReport', {
+        templateUrl: 'stockReport.html',
+        controller: 'stockReport'        
+      }).
+      when('/returnReport', {
+        templateUrl: 'returnReport.html',
+        controller: 'returnReport'        
+      }).
       otherwise({
         redirectTo: '/dashboard'
       });
