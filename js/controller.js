@@ -1528,7 +1528,7 @@ $scope.resetOrder=function()
 
 });
 
-app.controller('assignOrder',function($scope,$http,portals,DOMAIN,ORDER_ASSIGN_DETAILS_URL,$timeout){
+app.controller('assignOrder',function($scope,$http,portals,DOMAIN,ORDER_ASSIGN_DETAILS_URL,ASSIGN_ORDERS_URL,$timeout){
 $scope.portals=portals.portals;
 $scope.edit=false;
 $scope.assignProgress=false;
@@ -1562,22 +1562,43 @@ $scope.getorders=function()
 
   $scope.assign=function(order)
   {    
-    
+    var sku_IDS=[];
+
     if(typeof $scope.assignto=="object")
     {
-
-      $scope.assignForm.assignto.$setValidity("selectFromAuto", true);
-        $scope.$parent.loaded=false;
-        $scope.assignProgress=true;
-        $http.get(DOMAIN+ORDER_ASSIGN_DETAILS_URL,{params: {portal_id: $scope.portal.id,sku_id:$scope.selData.sku_id,user_id:$scope.assignto.user_id,assign:1,remark:$scope.remark}}).then(function(data){
-          $scope.onlineSalesList=data.data.ordersGroupBySku;
-          $scope.userlist=data.data.userlist;
-          $scope.$parent.loaded=true; 
-          $scope.inititalizeTable();
-          $scope.assignProgress=false;
+        $scope.assignForm.assignto.$setValidity("selectFromAuto", true);      
+        $('#dataTables-assignOrder tbody input[type="checkbox"]').each(function(){
+          if(this.checked){
+            sku_IDS.push(this.value);
+          }
         });
 
-      $scope.edit=false;
+        if(sku_IDS.length==0)
+        {
+          alert("Select the orders to Assign");
+        }
+        else
+        {
+          $scope.$parent.loaded=false;
+          $scope.assignProgress=true;
+          
+          $http.post(DOMAIN+ASSIGN_ORDERS_URL,{portal_id: $scope.portal.id,sku_ids:sku_IDS,user_id:$scope.assignto.user_id,assign:1,remark:$scope.remark}).then(function(data){
+            $scope.onlineSalesList=data.data.ordersGroupBySku;
+            $scope.userlist=data.data.userlist;
+            $scope.$parent.loaded=true; 
+            $scope.inititalizeTable();
+            $scope.assignProgress=false;
+            $scope.assignto='';
+            $scope.remark='';
+            $scope.msg=data.data.msg; 
+            $scope.statusCode=data.status;         
+            $scope.notification=true;
+            $scope.submitted=false;
+            $("#assignOrder-select-all").prop('checked',false)            
+          });
+        
+      }
+      
     }
     else
     {
@@ -1589,10 +1610,59 @@ $scope.getorders=function()
 
   $scope.inititalizeTable=function()
   {
-        var table = $('#dataTables-onlineSales').DataTable();
+
+    var displayLength;
+
+    if(localStorage.getItem('dataTables-assignOrder_length')==null)
+    {
+      displayLength=10;
+    }
+    else
+    {
+      displayLength=localStorage.getItem('dataTables-assignOrder_length');
+    }
+
+    if ( $.fn.dataTable.isDataTable( '#dataTables-assignOrder' ) ) {
+      table=$('#dataTables-assignOrder').DataTable();
+    }
+    else
+    {
+        var table = $('#dataTables-assignOrder').DataTable({"aoColumnDefs": [ { "bSortable": false, "aTargets": [ 0] } ],"order": [[ 1, "desc" ]]});
+    }
       table.destroy();
       $timeout(function() {
-          table=$('#dataTables-onlineSales').DataTable();
+        if ( $.fn.dataTable.isDataTable( '#dataTables-assignOrder' ) ) {
+          table=$('#dataTables-assignOrder').DataTable();
+        }
+        else
+        {
+
+          table=$('#dataTables-assignOrder').DataTable({"aoColumnDefs": [ { "bSortable": false, "aTargets": [ 0]} ],"order": [[ 1, "desc" ]],"iDisplayLength": displayLength});
+        }
+          
+          $('#assignOrder-select-all').on('click', function(){
+            var rows = table.rows({ 'search': 'applied' }).nodes();
+            $('input[type="checkbox"]', rows).prop('checked', this.checked);
+         });
+
+          // Handle click on checkbox to set state of "Select all" control
+       $('#dataTables-assignOrder tbody').on('change', 'input[type="checkbox"]', function(){
+          // If checkbox is not checked
+          if(!this.checked){
+             var el = $('#assignOrder-select-all').get(0);
+             // If "Select all" control is checked and has 'indeterminate' property
+             if(el && el.checked && ('indeterminate' in el)){
+                // Set visual state of "Select all" control 
+                // as 'indeterminate'
+                el.indeterminate = true;
+             }
+          }
+       });
+
+  $("[name='dataTables-assignOrder_length']").change(function(){    
+    localStorage.setItem("dataTables-assignOrder_length",this.value)
+  });
+
       }, 0);
   }
 

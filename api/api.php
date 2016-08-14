@@ -1301,25 +1301,31 @@ private function assignOrders()
 		{
 			$this->response('',406);
 		}
-		$assignTo=$this->_request['assignto'];
-
-		foreach ($this->_request['orders'] as $orderId)
+		$assignTo=$this->_request['user_id'];
+		$remark=$this->_request['remark'];
+		$portal_id=$this->_request['portal_id'];		
+		foreach ($this->_request['sku_ids'] as $sku_id)
 		{
 													
-				$sql="UPDATE online_sales set assign_to=$assignTo where id=$orderId";				
+				$sql="UPDATE online_sales set assign_to=$assignTo,remark='$remark' where portal=$portal_id and sku_id='$sku_id' and (order_status=1 or order_status=2)";				
 				if(!mysql_query($sql))
 				{
 					throw new Exception (mysql_error());
 				}
 		}
-
-		$portals=$this->portalList();
-		$onlineSalesList=$this->onlineSalesList();						
-		$orderStatusList=$this->orderStatusList();
-		$shippingStatusList=$this->shippingStatusList();
-		$userlist=$this->getUsers();
-		$data = array('status' => "Success", "msg" => 'Orders Assigned successfully', "portals"=>$portals,"onlineSalesList"=>$onlineSalesList,"orderStatusList"=>$orderStatusList,"shippingStatusList"=>$shippingStatusList,"userlist"=>$userlist);
-		$this->response($this->json($data), 200);		
+	if($portal_id!="")
+    {
+      $ordersGroupBySku=$this->ordersGroupBySku($portal_id);
+      $userlist=$this->getUsers();
+    }
+    else
+    {
+      $ordersGroupBySku="";
+      $userlist="";
+    }
+    $portals=$this->portalList();
+    $data = array('status' => "Success", "portals"=>$portals,"ordersGroupBySku"=>$ordersGroupBySku,"userlist"=>$userlist,'msg'=>"Orders Assigned successfully");
+     $this->response($this->json($data), 200);
 
 	}
 	catch (Exception $e) 
@@ -1349,11 +1355,6 @@ private function getAssignOrderDetails(){
 		$user_id=$this->_request['user_id'];
 		$assign=$this->_request['assign'];
 		$remark=$this->_request['remark'];
-		if($assign!="")
-		{
-			$this->assignOrder($portal_id,$sku_id,$user_id,$remark);
-		}
-
 		if($portal_id!="")
 		{
 			$ordersGroupBySku=$this->ordersGroupBySku($portal_id);
@@ -1364,7 +1365,6 @@ private function getAssignOrderDetails(){
 			$ordersGroupBySku="";
 			$userlist="";
 		}
-
 
 	$data = array('status' => "Success", "portals"=>$portals,"ordersGroupBySku"=>$ordersGroupBySku,"userlist"=>$userlist);
 
