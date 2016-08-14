@@ -1594,7 +1594,7 @@ $scope.getorders=function()
             $scope.statusCode=data.status;         
             $scope.notification=true;
             $scope.submitted=false;
-            $("#assignOrder-select-all").prop('checked',false)            
+            //$("#assignOrder-select-all").prop('checked',false)            
           });
         
       }
@@ -1663,6 +1663,7 @@ $scope.getorders=function()
     localStorage.setItem("dataTables-assignOrder_length",this.value)
   });
 
+  $("#assignOrder-select-all").prop('checked',false)
       }, 0);
   }
 
