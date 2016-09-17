@@ -202,7 +202,7 @@ $scope.handler=function(e,files)
            $scope.prod_history=data.data.prod_history;
            $scope.brands=data.data.brands;
            $scope.categories=data.data.categories;
-           $timeout(function() { $('#dataTables-stock').DataTable({ "aaSorting": []}); $('#dataTables-stock-history').DataTable({ "aaSorting": []});
+           $timeout(function() { $('#dataTables-stock').DataTable({ "aaSorting": [],}); $('#dataTables-stock-history').DataTable({ "aaSorting": []});
         $scope.$parent.loaded=true;}, 0);
         },function(data){
         $scope.$parent.loaded=true;
@@ -268,6 +268,15 @@ function saveStockUpdateUI(){
           });
 }
 
+$scope.exportStockDetails=function(){
+  var exportData=[];
+  $.grep($scope.productList,function(item){
+    var obj={"prod_name":item.prod_name,"sku_id":item.sku_id,"qty":item.qty,"cat_name":item.cat_name,"brand_name":item.brand_name,"upload_by":item.upload_by,"purchase_date":item.purchase_date};
+    exportData.push(obj);
+  });
+
+  return exportData;
+}
 
 });
 
@@ -1247,12 +1256,12 @@ $scope.reset = function(){
 
   $scope.dataTableOnlineSales=function(){
 
-  var table = $('#dataTables-onlineSales').DataTable();
+  var table = $('#dataTables-onlineSales').DataTable({"order": [[ 7, "desc" ]]});
 
   table.destroy();
   $timeout(function() { 
 
-    table=$('#dataTables-onlineSales').DataTable();
+    table=$('#dataTables-onlineSales').DataTable({"order": [[ 7, "desc" ]]});
    
    
    $('#onlineSales-select-all').on('click', function(){
@@ -1345,6 +1354,18 @@ $scope.removeSales=function(order){
   }
 
 
+}
+
+$scope.exportOnlineSales=function(){
+  var exportData=[];
+  $.grep($scope.onlineSalesList,function(item){
+    var obj={"order_id":item.order_id,"order_verified_date":item.order_verified_date,"ordered_on":item.ordered_on,"sku_id":item.sku_id,"quantity":item.quantity,"invoice_no":item.invoice_no,"amount":item.amount,
+      "invoice_date":item.invoice_date,"vat":item.vat,"buyer_name":item.buyer_name,"ship_to":item.ship_to,"address1":item.address1,"address2":item.address2,"city":item.city,"state":item.state,
+      "pin_code":item.pin_code,"mobile_number":item.mobile_number,"email_id":item.email_id,"courier_name":item.courier_name,"tracking_id":item.tracking_id,"reference_code":item.reference_code,"manifest_id":item.manifest_id,"ss_name":item.ss_name,"delivered_date":item.delivered_date,"os_name":item.os_name,"user_fullname":item.user_fullname,"assigned_name":item.assigned_name,"ff_type_name":item.ff_type_name,
+      "portal_name":item.portal_name};
+      exportData.push(obj);
+  });
+  return exportData;
 }
 
 });

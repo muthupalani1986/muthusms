@@ -1,3 +1,3 @@
 
-var app=angular.module('stockmanagement',['ngRoute','ui.bootstrap','chart.js']);
+var app=angular.module('stockmanagement',['ngRoute','ui.bootstrap','chart.js','ngCsv']);
 

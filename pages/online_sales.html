@@ -126,11 +126,18 @@
 
 
                             <div class="dataTable_wrapper">
+
+                        <div class="row">
+                            <div class="col-xs-12 form-group">
+                                           <button type="button" ng-csv="exportOnlineSales()" filename="stock_details.csv" class="btn btn-success" csv-header="['Order ID', 'Order Verified Date', 'Ordered On','SKU ID','Quantity','Invoice No','Amount','Invoice Date','Vat','Buyer Name','Ship To','Address 1','Address 2','City','State','Pin Code','Mobile Number','Email Id','Courier Name','Tracking ID','Reference Code','Manifest ID','Shipping Status','Delivered Date','Order Status','Upload By','Assigned to','Full Filement Type','Portal']">Export</button>
+                            </div>
+                        </div>
+
                                 <table class="table table-striped table-bordered table-hover" id="dataTables-onlineSales">
                                     <thead>
                                         <tr>
                                         <!-- <th><input name="select_all" value="1" id="onlineSales-select-all" type="checkbox" /></th>-->
-                                            <th>order ID</th>
+                                            <th>Order ID</th>
                                             <th>Order Verified Date</th>
                                             <th>Ordered On</th>
                                             <th>SKU ID</th>    

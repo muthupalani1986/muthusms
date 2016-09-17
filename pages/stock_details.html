@@ -171,6 +171,15 @@
                         </div>
                         <!-- /.panel-heading -->
                         <div class="panel-body table-responsive">
+
+                        <div class="row">
+                            <div class="col-xs-12 form-group">
+                                           <button type="button" ng-csv="exportStockDetails()" filename="stock_details.csv" class="btn btn-success" csv-header="['Prod Name', 'SKU ID', 'Quantity','Category','Brand','Upload By','Purchase Date']">Export</button>
+                            </div>
+                        </div>
+             
+
+
                             <div class="dataTable_wrapper">
                                 <table class="table table-striped table-bordered table-hover" id="dataTables-stock">
                                     <thead>
